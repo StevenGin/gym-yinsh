@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gym-yinsh"
+version = "0.1.0"
+description = "Gymnasium environment for the YINSH board game"
+requires-python = ">=3.9"
+dependencies = [
+    "gymnasium>=1.0",
+    "numpy>=1.21",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gym_yinsh*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
