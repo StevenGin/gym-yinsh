@@ -24,11 +24,13 @@ from gym_yinsh.actions import ACTION_SPACE_SIZE
 
 
 class YinshEnv(gym.Env):
-    metadata = {"render_modes": ["ansi"], "render_fps": 1}
+    metadata = {"render_modes": ["ansi", "human", "rgb_array"], "render_fps": 30}
 
     def __init__(self, render_mode: Optional[str] = None):
         super().__init__()
         self.render_mode = render_mode
+        self._pygame_renderer = None
+        self._mpl_renderer = None
 
         self.action_space = spaces.Discrete(ACTION_SPACE_SIZE)
 
@@ -74,9 +76,18 @@ class YinshEnv(gym.Env):
     def render(self):
         if self.render_mode == "ansi":
             return self._render_ansi()
+        if self.render_mode == "human":
+            return self._render_human()
+        if self.render_mode == "rgb_array":
+            return self._render_rgb_array()
 
     def close(self):
-        pass
+        if self._pygame_renderer is not None:
+            self._pygame_renderer.close()
+            self._pygame_renderer = None
+        if self._mpl_renderer is not None:
+            self._mpl_renderer.close()
+            self._mpl_renderer = None
 
     # ------------------------------------------------------------------ #
     # Observation / info builders
@@ -128,6 +139,18 @@ class YinshEnv(gym.Env):
     # ------------------------------------------------------------------ #
     # Render
     # ------------------------------------------------------------------ #
+
+    def _render_human(self):
+        from gym_yinsh.rendering.pygame_renderer import PygameRenderer
+        if self._pygame_renderer is None:
+            self._pygame_renderer = PygameRenderer()
+        return self._pygame_renderer.render(self.game.state)
+
+    def _render_rgb_array(self) -> "np.ndarray":
+        from gym_yinsh.rendering.matplotlib_renderer import MatplotlibRenderer
+        if self._mpl_renderer is None:
+            self._mpl_renderer = MatplotlibRenderer()
+        return self._mpl_renderer.render(self.game.state)
 
     def _render_ansi(self) -> str:
         from gym_yinsh.board import COORDS
